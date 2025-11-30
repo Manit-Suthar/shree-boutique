@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react";
 import styles from "./gallery.module.css";
-import { client } from "@/sanity/lib/client";
-// ✅ CORRECT: Use the named export
+
+// --- Import Sanity Functions ---
+import { client } from "@/lib/sanity.client";
 import { createImageUrlBuilder } from "@sanity/image-url";
+import { getGalleryData } from "@/lib/sanity.queries"; // ⬅️ Assuming you exported this
+
 // Create a builder for generating Sanity image URLs
-// ✅ CORRECT: Use the new function name
-const builder = createImageUrlBuilder(client);function urlFor(src) {
+const builder = createImageUrlBuilder(client);
+
+// Helper function to convert Sanity image source to URL
+function urlFor(src) {
   return builder.image(src).url();
 }
 
@@ -23,12 +28,29 @@ const categories = [
   "Frock",
 ];
 
+// Helper to map Sanity category → display category
+function convertSanityCategory(category) {
+  const map = {
+    blouse: "Blouse",
+    chaniyaCholi: "Chaniya Choli",
+    kurtis: "Kurti",
+    // Ensure all categories you added in Sanity are mapped here!
+    // Example: If Sanity value is 'alterations' the display is 'Alterations'
+    alterations: "Alterations",
+    western: "Western",
+    kids: "Kids Wear",
+    // Add missing mappings here if needed
+  };
+  return map[category] || "Other";
+}
+
+
 export default function GalleryPage() {
   const [filter, setFilter] = useState("All");
   const [activeFilter, setActiveFilter] = useState("All");
   const [modalImg, setModalImg] = useState(null);
 
-  const [images, setImages] = useState([]);   // ← Now images come from Sanity
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // -----------------------------
@@ -37,17 +59,12 @@ export default function GalleryPage() {
   useEffect(() => {
     async function fetchGallery() {
       try {
-        const data = await client.fetch(`
-          *[_type == "productGallery"]{
-            title,
-            category,
-            "imageUrl": image.asset->url
-          }
-        `);
+        // ✅ Call the function from the queries file
+        const data = await getGalleryData(); 
 
-        // Convert Sanity categories to match your filter categories
         const formatted = data.map(item => ({
-          src: item.imageUrl ? urlFor(item.imageUrl) : "",
+          // Use item.imageUrl which we defined in the GROQ query
+          src: item.imageUrl ? urlFor(item.imageUrl) : urlFor(item.image), 
           category: convertSanityCategory(item.category)
         }));
 
@@ -60,24 +77,10 @@ export default function GalleryPage() {
     }
 
     fetchGallery();
-  }, []);
+  }, []); // Run only once on mount
 
-  // Helper to map Sanity category → display category
-  function convertSanityCategory(category) {
-    const map = {
-      blouse: "Blouse",
-      chaniyaCholi: "Chaniya Choli",
-      kurtis: "Kurti",
-      western: "Western",
-      kids: "Kids Wear",
-      alterations: "Alterations",
-      dress: "Dress",
-      frock: "Frock"
-    };
-    return map[category] || "Other";
-  }
 
-  // FIX: Correct filtering logic
+  // Correct filtering logic
   const filtered =
     filter === "All"
       ? images
