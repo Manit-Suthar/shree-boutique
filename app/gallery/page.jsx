@@ -3,19 +3,17 @@
 import { useState, useEffect } from "react";
 import styles from "./gallery.module.css";
 
-// --- Import Sanity Functions ---
-import { client } from "@/lib/sanity.client";
+// Sanity Tools
 import { createImageUrlBuilder } from "@sanity/image-url";
-import { getGalleryData } from "@/lib/sanity.queries"; // ⬅️ Assuming you exported this
+import { client } from "@/sanity/lib/client";
+import { getGalleryData } from "@/sanity/lib/queries";
 
-// Create a builder for generating Sanity image URLs
+
+// Create builder for image URLs
 const builder = createImageUrlBuilder(client);
+const urlFor = (src) => builder.image(src).url();
 
-// Helper function to convert Sanity image source to URL
-function urlFor(src) {
-  return builder.image(src).url();
-}
-
+// Front-end gallery categories
 const categories = [
   "All",
   "Blouse",
@@ -28,60 +26,54 @@ const categories = [
   "Frock",
 ];
 
-// Helper to map Sanity category → display category
-function convertSanityCategory(category) {
-  const map = {
-    blouse: "Blouse",
-    chaniyaCholi: "Chaniya Choli",
-    kurtis: "Kurti",
-    // Ensure all categories you added in Sanity are mapped here!
-    // Example: If Sanity value is 'alterations' the display is 'Alterations'
-    alterations: "Alterations",
-    western: "Western",
-    kids: "Kids Wear",
-    // Add missing mappings here if needed
-  };
-  return map[category] || "Other";
-}
+// Map Sanity values → UI filter names
+const categoryMap = {
+  blouse: "Blouse",
+  chaniyaCholi: "Chaniya Choli",
+  kurtis: "Kurti",
+  western: "Western",
+  kids: "Kids Wear",
+  alterations: "Alterations",
+  dress: "Dress",
+  frock: "Frock",
+};
 
+const convertSanityCategory = (value) => categoryMap[value] || "Other";
 
 export default function GalleryPage() {
-  const [filter, setFilter] = useState("All");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [filter, setFilter] = useState("All");
   const [modalImg, setModalImg] = useState(null);
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // -----------------------------
-  // 1️⃣ Fetch Gallery Items from Sanity
-  // -----------------------------
+  // ---------------------------------------
+  //  Fetch Gallery Data from Sanity on Load
+  // ---------------------------------------
   useEffect(() => {
-    async function fetchGallery() {
+    async function loadGallery() {
       try {
-        // ✅ Call the function from the queries file
-        const data = await getGalleryData(); 
+        const data = await getGalleryData();
 
-        const formatted = data.map(item => ({
-          // Use item.imageUrl which we defined in the GROQ query
-          src: item.imageUrl ? urlFor(item.imageUrl) : urlFor(item.image), 
-          category: convertSanityCategory(item.category)
+        const formatted = data.map((item) => ({
+          src: item.imageUrl ? urlFor(item.imageUrl) : urlFor(item.image),
+          category: convertSanityCategory(item.category),
         }));
 
         setImages(formatted);
-        setLoading(false);
       } catch (error) {
         console.error("SANITY FETCH ERROR:", error);
+      } finally {
         setLoading(false);
       }
     }
 
-    fetchGallery();
-  }, []); // Run only once on mount
+    loadGallery();
+  }, []);
 
-
-  // Correct filtering logic
-  const filtered =
+  // Filter Logic
+  const filteredImages =
     filter === "All"
       ? images
       : images.filter((img) => img.category === filter);
@@ -109,17 +101,17 @@ export default function GalleryPage() {
       </div>
 
       {/* LOADING STATE */}
-      {loading && <p className={styles.loading}>Loading...</p>}
+      {loading && <p className={styles.loading}>Loading…</p>}
 
       {/* IMAGE GRID */}
       {!loading && (
         <div className={styles.grid}>
-          {filtered.map((img, index) => (
-            <div key={index} className={styles.imageWrapper}>
+          {filteredImages.map((img, i) => (
+            <div key={i} className={styles.imageWrapper}>
               <img
                 src={img.src}
-                alt="Gallery item"
                 className={styles.image}
+                alt=""
                 onClick={() => setModalImg(img.src)}
               />
             </div>
@@ -127,7 +119,7 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* FULLSCREEN MODAL */}
+      {/* MODAL */}
       {modalImg && (
         <div className={styles.modal} onClick={() => setModalImg(null)}>
           <img src={modalImg} alt="" className={styles.modalImg} />
