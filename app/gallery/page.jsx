@@ -9,6 +9,7 @@ import { client } from "@/sanity/lib/client";
 import { getGalleryData } from "@/sanity/lib/queries";
 
 
+
 // Create builder for image URLs
 const builder = createImageUrlBuilder(client);
 const urlFor = (src) => builder.image(src).url();

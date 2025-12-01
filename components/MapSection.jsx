@@ -71,17 +71,6 @@ export default function MapSection({
                 </div>
               </div>
 
-              {/* Hours */}
-              <div className={styles.infoRow}>
-                <div className={styles.iconBox}>
-                  <Clock size={18} />
-                </div>
-                <div className={styles.infoText}>
-                  <p className={styles.boldLabel}>Hours</p>
-                  <p>Mon - Sat: 10:00 AM - 8:00 PM</p>
-                  <p className={styles.closedText}>Sunday: Closed</p>
-                </div>
-              </div>
             </div>
 
             {/* Buttons - Smaller & Professional */}
