@@ -1,9 +1,9 @@
+import homepageSettings from "./homepageSettings";
 import productGallery from "./productGallery";
 import reviews from "./reviews";
-import homepageSettings from "./homepageSettings";
 
 export const schemaTypes = [
+  homepageSettings,
   productGallery,
   reviews,
-  homepageSettings,
 ];

@@ -3,16 +3,15 @@
 import { useState, useEffect } from "react";
 import styles from "./gallery.module.css";
 
-// Sanity Tools
-import { createImageUrlBuilder } from "@sanity/image-url";
-import { client } from "@/sanity/lib/client";
-import { getGalleryData } from "@/sanity/lib/queries";
+// 🎯 FIX: Import only the client and urlFor helper from your client file
+import { client, urlFor } from "../../sanityClient.js";
+import { getProductGallery } from "../../sanity/queries.js"; 
+// Note: Assumed the path is correct for queries.js (../queries.js)
 
-
-
-// Create builder for image URLs
-const builder = createImageUrlBuilder(client);
-const urlFor = (src) => builder.image(src).url();
+// ❌ REMOVED: Redundant local builder setup that caused the TypeError
+// import { createImageUrlBuilder } from "@sanity/image-url";
+// const builder = createImageUrlBuilder(client);
+// const urlFor = (src) => builder.image(src).url(); // <-- This line caused the conflict
 
 // Front-end gallery categories
 const categories = [
@@ -55,12 +54,24 @@ export default function GalleryPage() {
   useEffect(() => {
     async function loadGallery() {
       try {
-        const data = await getGalleryData();
+        const data = await getProductGallery();
 
-        const formatted = data.map((item) => ({
-          src: item.imageUrl ? urlFor(item.imageUrl) : urlFor(item.image),
-          category: convertSanityCategory(item.category),
-        }));
+        const formatted = data.map((item) => {
+          // ✅ Use the raw Sanity image object (item.image)
+          const imageSource = item.image; 
+
+          if (!imageSource) {
+            // Check for missing image source
+            console.warn(`Skipping gallery item with title: ${item.title} (No image found)`);
+            return null;
+          }
+
+          return {
+            // ✅ FIX: Call the global 'urlFor' helper and then call .url() once
+            src: urlFor(imageSource).url(),
+            category: convertSanityCategory(item.category),
+          };
+        }).filter(Boolean); // Filter out any null entries
 
         setImages(formatted);
       } catch (error) {
@@ -88,9 +99,8 @@ export default function GalleryPage() {
         {categories.map((cat) => (
           <button
             key={cat}
-            className={`${styles.filterBtn} ${
-              activeFilter === cat ? styles.activeBtn : ""
-            }`}
+            className={`${styles.filterBtn} ${activeFilter === cat ? styles.activeBtn : ""
+              }`}
             onClick={() => {
               setActiveFilter(cat);
               setFilter(cat);
@@ -112,7 +122,7 @@ export default function GalleryPage() {
               <img
                 src={img.src}
                 className={styles.image}
-                alt=""
+                alt={img.category || "Gallery item"}
                 onClick={() => setModalImg(img.src)}
               />
             </div>
@@ -123,7 +133,7 @@ export default function GalleryPage() {
       {/* MODAL */}
       {modalImg && (
         <div className={styles.modal} onClick={() => setModalImg(null)}>
-          <img src={modalImg} alt="" className={styles.modalImg} />
+          <img src={modalImg} alt="Full screen preview" className={styles.modalImg} />
         </div>
       )}
     </section>

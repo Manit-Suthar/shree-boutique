@@ -34,6 +34,13 @@ export default {
         type: "string",
         initialValue: "#ffe5ef",
       },
+      {
+        name: "whatsappNumber",
+        title: "WhatsApp Number",
+        type: "string",
+        description: "Phone number for WhatsApp contact button",
+      },
+      
     ],
   };
   
