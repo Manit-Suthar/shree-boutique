@@ -5,8 +5,8 @@ import styles from "./Testimonials.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, MapPin, Quote } from "lucide-react"; // Make sure to install lucide-react if needed
 
-export default function Testimonials() {
-  const testimonials = [
+export default function Testimonials({ fetchedReviews = [] }) {
+  const defaultTestimonials = [
     {
       name: "Kajal Patel",
       text: "I got my bridal blouse stitched here and the fitting was absolutely perfect! The detailing work was amazing.",
@@ -33,6 +33,16 @@ export default function Testimonials() {
       location: "Prahladnagar",
     },
   ];
+
+  // Use fetched reviews if available, otherwise fallback to defaults
+  const testimonials = fetchedReviews && fetchedReviews.length > 0
+    ? fetchedReviews.map(r => ({
+        name: r.name,
+        text: r.review,
+        location: r.location || "Ahmedabad",
+        rating: r.rating || 5
+      }))
+    : defaultTestimonials;
 
   const [index, setIndex] = useState(0);
 
@@ -81,7 +91,7 @@ export default function Testimonials() {
 
               {/* Star Rating */}
               <div className={styles.stars}>
-                {[...Array(5)].map((_, i) => (
+                {[...Array(testimonials[index]?.rating || 5)].map((_, i) => (
                   <Star key={i} size={18} fill="#b76e79" stroke="none" />
                 ))}
               </div>

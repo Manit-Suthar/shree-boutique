@@ -6,16 +6,6 @@ export const structure = (S) =>
   S.list()
     .title('Content')
     .items([
-      // 1. Singleton Document (Homepage Settings - Single form entry)
-      S.listItem()
-        .title('Homepage Settings')
-        .icon(Home)
-        .child(
-          S.document()
-            .schemaType('homepageSettings')
-            .documentId('homepageSettings')
-        ),
-
       // 2. Document List (Boutique Gallery - List of items)
       S.listItem()
         .title('Boutique Gallery')

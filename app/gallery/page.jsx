@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "./gallery.module.css";
 
 // 🎯 FIX: Import only the client and urlFor helper from your client file
@@ -119,10 +120,13 @@ export default function GalleryPage() {
         <div className={styles.grid}>
           {filteredImages.map((img, i) => (
             <div key={i} className={styles.imageWrapper}>
-              <img
+              <Image
                 src={img.src}
                 className={styles.image}
                 alt={img.category || "Gallery item"}
+                width={500}
+                height={500}
+                style={{ objectFit: 'contain' }}
                 onClick={() => setModalImg(img.src)}
               />
             </div>
@@ -133,7 +137,7 @@ export default function GalleryPage() {
       {/* MODAL */}
       {modalImg && (
         <div className={styles.modal} onClick={() => setModalImg(null)}>
-          <img src={modalImg} alt="Full screen preview" className={styles.modalImg} />
+          <Image src={modalImg} alt="Full screen preview" className={styles.modalImg} width={1200} height={1200} style={{ objectFit: 'contain' }} unoptimized />
         </div>
       )}
     </section>

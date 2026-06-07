@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
@@ -30,10 +33,14 @@ export default function Navbar() {
   }
 
   const scrollToLocation = () => {
-    const section = document.getElementById("location");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-      setOpen(false);
+    setOpen(false);
+    if (pathname === "/") {
+      const section = document.getElementById("location");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      router.push("/#location");
     }
   };
 

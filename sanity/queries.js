@@ -45,13 +45,13 @@ export const reviewsQuery = groq`
 // ---------------------------------
 
 export async function getProductGallery() {
-  return client.fetch(galleryQuery);
+  return client.fetch(galleryQuery, {}, { next: { revalidate: 30 } });
 }
 
 export async function getHomepageSettings() {
-  return client.fetch(homepageSettingsQuery);
+  return client.fetch(homepageSettingsQuery, {}, { next: { revalidate: 30 } });
 }
 
 export async function getReviews() {
-  return client.fetch(reviewsQuery);
+  return client.fetch(reviewsQuery, {}, { next: { revalidate: 30 } });
 }
